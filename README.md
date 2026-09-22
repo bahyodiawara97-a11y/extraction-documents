@@ -4,7 +4,15 @@ Pipeline qui transforme des factures, reçus, CV et contrats — PDF natifs, PDF
 formulaires ou scans — en données structurées exportables, avec une mesure de
 justesse champ par champ et des contrôles de cohérence métier.
 
-Écrit en Python, testé par 125 tests, évalué sur un jeu de documents annotés.
+Écrit en Python, testé par 133 tests, évalué sur un jeu de documents annotés.
+
+**[Démonstration en ligne](https://extraction-documents-bahyo.streamlit.app)** —
+sans clé API : l'application rejoue les résultats d'une exécution réelle du pipeline
+sur le jeu d'évaluation. Une démonstration publique déployée avec une clé laisserait
+n'importe quel visiteur dépenser le crédit de son auteur ; déployée sans, elle
+accueillerait le visiteur par une demande de clé qu'il n'a pas. Les résultats sont
+donc figés par `evaluation/generer_demo.py`, qui exécute le vrai pipeline — rien
+n'est écrit à la main. Qui veut traiter ses propres documents apporte sa clé.
 
 ## Résultats mesurés
 
@@ -135,7 +143,7 @@ cp .env.example .env    # y renseigner ANTHROPIC_API_KEY
 streamlit run app.py                                  # interface
 python main.py data/input --type facture              # lot en ligne de commande
 python main.py data/input --type contrat --format csv
-pytest tests/ -q                                      # 125 tests, sans clé API
+pytest tests/ -q                                      # 133 tests, sans clé API
 ```
 
 Ajouter un type de document tient en deux gestes : définir une classe Pydantic dans
