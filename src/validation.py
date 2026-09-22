@@ -14,6 +14,7 @@ from datetime import date, datetime
 from pydantic import BaseModel
 
 from .schemas import CV, Contrat, Facture
+from .structuration import MARQUEURS_ABSENCE
 
 # Tolérance sur les arrondis de TVA (en unités de devise).
 TOLERANCE_MONTANT = 0.02
@@ -131,17 +132,34 @@ def _construire_rapport(
     )
 
 
+def est_vide(valeur) -> bool:
+    """Un champ est vide s'il est nul, s'il est une collection vide, ou s'il contient
+    une chaîne qui *signale* une absence ("null", "non spécifié", "-").
+
+    Ce dernier cas est traité en amont par src.structuration, mais on le revérifie ici :
+    compter un "null" textuel comme un champ rempli fausse tous les indicateurs, et
+    l'erreur est indétectable à l'œil puisque les tableurs affichent ces chaînes comme
+    des cases vides.
+    """
+    if valeur is None:
+        return True
+    if isinstance(valeur, str):
+        return valeur.strip().lower() in MARQUEURS_ABSENCE or not valeur.strip()
+    if isinstance(valeur, (list, dict, set, tuple)):
+        return len(valeur) == 0
+    return False
+
+
 def _taux_remplissage(donnees: BaseModel) -> float:
     valeurs = donnees.model_dump()
     if not valeurs:
         return 0.0
-    remplis = sum(1 for v in valeurs.values() if v not in (None, "", [], {}))
-    return remplis / len(valeurs)
+    return sum(1 for v in valeurs.values() if not est_vide(v)) / len(valeurs)
 
 
 def _champs_vides(donnees: BaseModel, critiques: list[str]) -> list[str]:
     valeurs = donnees.model_dump()
-    return [c for c in critiques if valeurs.get(c) in (None, "", [], {})]
+    return [c for c in critiques if est_vide(valeurs.get(c))]
 
 
 def _parser_date(valeur: str | None) -> date | None:

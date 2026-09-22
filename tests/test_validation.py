@@ -8,7 +8,33 @@ suite de tests sur un projet LLM — on teste ce qui est testable.
 import pytest
 
 from src.schemas import CV, Contrat, Facture
-from src.validation import _parser_date, valider
+from src.validation import _parser_date, est_vide, valider
+
+
+class TestChampVide:
+    """Une chaîne qui signale une absence ne doit pas compter comme un champ rempli."""
+
+    @pytest.mark.parametrize("valeur", [None, "", "   ", [], {}, "null", "N/A", "-", "inconnu"])
+    def test_valeurs_considerees_vides(self, valeur):
+        assert est_vide(valeur)
+
+    @pytest.mark.parametrize("valeur", ["POUHA ESTELLE", 540.0, 0, False, ["Python"]])
+    def test_valeurs_considerees_remplies(self, valeur):
+        assert not est_vide(valeur)
+
+    def test_score_non_fausse_par_des_null_textuels(self):
+        # Le cas réel : six champs renseignés, deux contenant la chaîne "null".
+        contrat = Contrat(
+            type_contrat="Location meublée",
+            partie_a="POUHA ESTELLE",
+            partie_b="BAHYO DIAWARA",
+            date_signature="2025-09-27",
+            date_debut="2025-10-01",
+            date_fin="null",
+            montant=540,
+            duree_preavis="null",
+        )
+        assert valider(contrat).score_confiance == 0.75
 
 
 class TestFacture:
