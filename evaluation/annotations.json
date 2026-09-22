@@ -1,0 +1,183 @@
+{
+  "_lisez_moi": [
+    "Jeu d'evaluation : documents fictifs annotes a la main, servant de reference.",
+    "",
+    "Chaque entree decrit un document et les valeurs qu un humain y lirait.",
+    "Les chemins sont relatifs a ce fichier.",
+    "",
+    "REGLE D ANNOTATION, la plus importante : un champ absent du document s annote a",
+    "null, jamais avec la valeur qu on pourrait en deduire. Si une facture porte une",
+    "date d emission et la mention << paiement a 30 jours >> sans ecrire de date d echeance,",
+    "alors date_echeance vaut null. Annoter la date calculee reviendrait a recompenser",
+    "le pipeline quand il invente - exactement ce que cette evaluation cherche a mesurer.",
+    "",
+    "Les annotations ne sont pas recopiees a la main : elles sont derivees des memes",
+    "donnees qui servent a dessiner les documents (voir le generateur). Les deux ne",
+    "peuvent donc pas diverger.",
+    "",
+    "Documents fictifs, donc versionnables. Pour evaluer sur des documents reels,",
+    "creer un fichier separe exclu du depot : voir .gitignore, annotations_privees."
+  ],
+  "documents": [
+    {
+      "fichier": "documents/facture_test_001.pdf",
+      "type": "facture",
+      "commentaire": "PDF natif, filigrane en diagonale qui parasite le texte extrait",
+      "attendu": {
+        "numero_facture": "FA-2026-0147",
+        "date_emission": "2026-03-12",
+        "date_echeance": "2026-04-11",
+        "nom_fournisseur": "SARL EXEMPLE SERVICES",
+        "nom_client": "ENTREPRISE FICTIVE SAS",
+        "montant_ht": 1470.0,
+        "montant_tva": 294.0,
+        "montant_ttc": 1764.0,
+        "devise": "EUR"
+      }
+    },
+    {
+      "fichier": "documents/facture_test_002.pdf",
+      "type": "facture",
+      "commentaire": "PDF natif, trois lignes de detail",
+      "attendu": {
+        "numero_facture": "2026-0892",
+        "date_emission": "2026-02-28",
+        "date_echeance": "2026-03-30",
+        "nom_fournisseur": "PAPETERIE MODELE SARL",
+        "nom_client": "ASSOCIATION DEMO",
+        "montant_ht": 337.8,
+        "montant_tva": 67.56,
+        "montant_ttc": 405.36,
+        "devise": "EUR"
+      }
+    },
+    {
+      "fichier": "documents/facture_test_003_scannee.png",
+      "type": "facture",
+      "commentaire": "Rasterisation du 001 : force le chemin OCR. Ordre de lecture detruit, libelles et valeurs dans des blocs separes.",
+      "attendu": {
+        "numero_facture": "FA-2026-0147",
+        "date_emission": "2026-03-12",
+        "date_echeance": "2026-04-11",
+        "nom_fournisseur": "SARL EXEMPLE SERVICES",
+        "nom_client": "ENTREPRISE FICTIVE SAS",
+        "montant_ht": 1470.0,
+        "montant_tva": 294.0,
+        "montant_ttc": 1764.0,
+        "devise": "EUR"
+      }
+    },
+    {
+      "fichier": "documents/facture_004_exoneree.pdf",
+      "type": "facture",
+      "commentaire": "Prestation exonérée de TVA (article 261-4-4 CGI) : ni HT ni TVA affichés, seul un montant total. Piège à hallucination.",
+      "attendu": {
+        "numero_facture": "F-2026-0031",
+        "date_emission": "2026-04-05",
+        "date_echeance": null,
+        "nom_fournisseur": "CABINET FORMATION MODELE",
+        "nom_client": "SOCIETE FICTIVE SARL",
+        "montant_ht": null,
+        "montant_tva": null,
+        "montant_ttc": 1380.0,
+        "devise": "EUR"
+      }
+    },
+    {
+      "fichier": "documents/facture_005_comptant.pdf",
+      "type": "facture",
+      "commentaire": "Paiement comptant : aucune date d'échéance sur le document. Le modèle pourrait la déduire de la date d'émission.",
+      "attendu": {
+        "numero_facture": "QM-88214",
+        "date_emission": "2026-01-17",
+        "date_echeance": null,
+        "nom_fournisseur": "QUINCAILLERIE DU MODELE",
+        "nom_client": "ATELIER DEMO EURL",
+        "montant_ht": 226.7,
+        "montant_tva": 45.34,
+        "montant_ttc": 272.04,
+        "devise": "EUR"
+      }
+    },
+    {
+      "fichier": "documents/facture_006_remise.pdf",
+      "type": "facture",
+      "commentaire": "Remise commerciale : deux sous-totaux HT (brut puis net). Le bon montant HT est le net, plus bas dans le tableau.",
+      "attendu": {
+        "numero_facture": "2026/0447",
+        "date_emission": "2026-05-22",
+        "date_echeance": "2026-06-21",
+        "nom_fournisseur": "GROSSISTE EXEMPLE SAS",
+        "nom_client": "BOUTIQUE MODELE",
+        "montant_ht": 1190.0,
+        "montant_tva": 238.0,
+        "montant_ttc": 1428.0,
+        "devise": "EUR"
+      }
+    },
+    {
+      "fichier": "documents/facture_007_anglais_usd.pdf",
+      "type": "facture",
+      "commentaire": "Document en anglais, devise USD, dates au format américain (MM/DD/YYYY). Le schéma et le prompt sont en français.",
+      "attendu": {
+        "numero_facture": "INV-2026-1188",
+        "date_emission": "2026-03-09",
+        "date_echeance": "2026-04-08",
+        "nom_fournisseur": "SAMPLE SOFTWARE INC.",
+        "nom_client": "DEMO STUDIO LLC",
+        "montant_ht": 2850.0,
+        "montant_tva": 235.13,
+        "montant_ttc": 3085.13,
+        "devise": "USD"
+      }
+    },
+    {
+      "fichier": "documents/recu_008_sans_numero.pdf",
+      "type": "facture",
+      "commentaire": "Reçu de caisse : aucun numéro de facture, aucun client nommé, pas de TVA détaillée. Trois champs légitimement absents.",
+      "attendu": {
+        "numero_facture": null,
+        "date_emission": "2026-02-11",
+        "date_echeance": null,
+        "nom_fournisseur": "LIBRAIRIE DU MODELE",
+        "nom_client": null,
+        "montant_ht": null,
+        "montant_tva": null,
+        "montant_ttc": 73.5,
+        "devise": "EUR"
+      }
+    },
+    {
+      "fichier": "documents/facture_009_source_pour_scan.pdf",
+      "type": "facture",
+      "commentaire": "Source du scan dégradé (voir facture_009_scan_degrade.png).",
+      "attendu": {
+        "numero_facture": "TM-2026-0503",
+        "date_emission": "2026-06-08",
+        "date_echeance": "2026-07-08",
+        "nom_fournisseur": "TRANSPORTS MODELE SARL",
+        "nom_client": "NEGOCE FICTIF SA",
+        "montant_ht": 1325.0,
+        "montant_tva": 265.0,
+        "montant_ttc": 1590.0,
+        "devise": "EUR"
+      }
+    },
+    {
+      "fichier": "documents/facture_009_scan_degrade.png",
+      "type": "facture",
+      "commentaire": "Scan degrade du 009 : rotation de 0,7 degre, bruit gaussien, voile gris inegal, contraste affaibli. Meme verite terrain que la source.",
+      "attendu": {
+        "numero_facture": "TM-2026-0503",
+        "date_emission": "2026-06-08",
+        "date_echeance": "2026-07-08",
+        "nom_fournisseur": "TRANSPORTS MODELE SARL",
+        "nom_client": "NEGOCE FICTIF SA",
+        "montant_ht": 1325.0,
+        "montant_tva": 265.0,
+        "montant_ttc": 1590.0,
+        "devise": "EUR"
+      }
+    }
+  ]
+}

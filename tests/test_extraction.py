@@ -8,7 +8,74 @@ d'où ces tests.
 
 import pytest
 
-from src.extraction import _denormaliser_nom_champ, extraire_texte
+from src.extraction import _denormaliser_nom_champ, extraire_texte, regrouper_en_lignes
+
+
+def mot(texte: str, x: float, haut: float, hauteur: float = 9.0) -> dict:
+    return {"text": texte, "x0": x, "top": haut, "bottom": haut + hauteur}
+
+
+def rendre(lignes) -> list[str]:
+    ordonnees = sorted(lignes, key=lambda l: l["centre"])
+    return [
+        " ".join(t for _, t in sorted(l["elements"], key=lambda e: e[0])) for l in ordonnees
+    ]
+
+
+class TestRegroupementEnLignes:
+    """Régression : un filigrane avalait la page entière.
+
+    Le regroupement étendait l'étendue verticale d'une ligne à chaque mot ajouté.
+    Une lettre de filigrane haute de 54 points élargissait donc la ligne au point
+    d'absorber tout le document, qui se retrouvait sur une seule ligne, montants
+    mélangés. Aucune erreur levée, aucun texte perdu : seulement un ordre de lecture
+    détruit. Détecté par l'évaluation, pas par les tests d'alors.
+    """
+
+    def test_lignes_separees(self):
+        mots = [
+            mot("Total", 100, 500),
+            mot("HT", 130, 500),
+            mot("1 190,00", 300, 500),
+            mot("TVA", 100, 515),
+            mot("238,00", 300, 515),
+        ]
+        assert rendre(regrouper_en_lignes(mots)) == ["Total HT 1 190,00", "TVA 238,00"]
+
+    def test_ordre_horizontal_respecte(self):
+        mots = [mot("fin", 300, 100), mot("debut", 50, 100), mot("milieu", 150, 100)]
+        assert rendre(regrouper_en_lignes(mots)) == ["debut milieu fin"]
+
+    def test_filigrane_n_avale_pas_la_page(self):
+        # Une lettre de filigrane de 54 points, centrée au milieu du document.
+        mots = [
+            mot("D", 200, 380, hauteur=54),
+            mot("Total", 100, 400),
+            mot("1 190,00", 300, 400),
+            mot("TVA", 100, 420),
+            mot("238,00", 300, 420),
+            mot("TTC", 100, 440),
+            mot("1 428,00", 300, 440),
+        ]
+        lignes = rendre(regrouper_en_lignes(mots))
+        assert len(lignes) >= 3, f"les lignes ont fusionné : {lignes}"
+        assert "1 190,00" not in " ".join(l for l in lignes if "1 428,00" in l)
+
+    def test_montants_ne_se_melangent_pas(self):
+        mots = [mot("D", 200, 380, hauteur=54)]
+        for i, montant in enumerate(["400,00", "210,00", "190,00", "238,00", "428,00"]):
+            mots.append(mot(f"Ligne{i}", 100, 400 + i * 15))
+            mots.append(mot(montant, 300, 400 + i * 15))
+        lignes = rendre(regrouper_en_lignes(mots))
+        montants_par_ligne = [sum(1 for m in ["400,00", "210,00", "190,00"] if m in l) for l in lignes]
+        assert max(montants_par_ligne) <= 1, f"plusieurs montants sur une ligne : {lignes}"
+
+    def test_titre_plus_grand_reste_seul(self):
+        mots = [mot("FACTURE", 50, 100, hauteur=20), mot("Émetteur", 50, 140)]
+        assert len(regrouper_en_lignes(mots)) == 2
+
+    def test_liste_vide(self):
+        assert regrouper_en_lignes([]) == []
 
 
 class TestDenormalisationNomChamp:

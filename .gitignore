@@ -12,4 +12,10 @@ data/input/*
 data/output/*
 !data/output/.gitkeep
 
+# Évaluation : le jeu de référence fictif est versionné, les annotations portant
+# sur des documents réels ne le sont pas.
+evaluation/annotations_privees*.json
+evaluation/documents_prives/
+evaluation/resultats*.csv
+
 .DS_Store

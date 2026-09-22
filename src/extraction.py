@@ -95,7 +95,16 @@ def _valeurs_formulaire(chemin: Path) -> dict[str, str]:
     """
     try:
         from pypdf import PdfReader
+    except ImportError:
+        # Une dépendance absente doit être bruyante : sans elle, les PDF de type
+        # formulaire seraient lus comme des modèles vierges, sans aucune erreur.
+        logger.warning(
+            "pypdf n'est pas installé : les valeurs des PDF formulaires seront ignorées. "
+            "Corriger avec : pip install pypdf"
+        )
+        return {}
 
+    try:
         champs = PdfReader(str(chemin)).get_fields() or {}
     except Exception as exc:  # noqa: BLE001 - un PDF sans formulaire ne doit pas faire échouer la lecture
         logger.debug("Pas de formulaire exploitable dans %s : %s", chemin.name, exc)
@@ -115,6 +124,42 @@ def _valeurs_formulaire(chemin: Path) -> dict[str, str]:
     return valeurs
 
 
+def regrouper_en_lignes(mots: list[dict]) -> list[dict]:
+    """Regroupe des mots positionnés en lignes de lecture.
+
+    Chaque ligne retient le centre vertical de son *premier* mot comme référence, et
+    ce centre n'est jamais étendu. La contrainte n'est pas cosmétique : une première
+    version élargissait l'étendue de la ligne à chaque mot ajouté, si bien qu'une
+    lettre de filigrane de 54 points de haut suffisait à absorber toute la page par
+    effet de cascade. Le document entier se retrouvait sur une seule ligne, montants
+    mélangés — sans la moindre erreur visible, puisque le texte existait toujours.
+
+    La tolérance dépend de la taille du mot : deux mots de corps 9 doivent tenir sur
+    la même ligne à 2 points près, deux titres de corps 20 méritent plus de latitude.
+    """
+    lignes: list[dict] = []
+
+    for mot in sorted(mots, key=lambda m: (m["top"], m["x0"])):
+        centre = (mot["top"] + mot["bottom"]) / 2
+        hauteur = max(1.0, mot["bottom"] - mot["top"])
+        tolerance = max(2.0, hauteur * 0.5)
+
+        ligne = next((l for l in lignes if abs(l["centre"] - centre) <= tolerance), None)
+        if ligne is None:
+            lignes.append(
+                {
+                    "centre": centre,
+                    "haut": mot["top"],
+                    "bas": mot["bottom"],
+                    "elements": [(mot["x0"], mot["text"])],
+                }
+            )
+        else:
+            ligne["elements"].append((mot["x0"], mot["text"]))
+
+    return lignes
+
+
 def _lire_pdf_natif(chemin: Path) -> ResultatExtraction:
     """Lit la couche texte d'un PDF, en y réinsérant les valeurs de formulaire.
 
@@ -127,28 +172,22 @@ def _lire_pdf_natif(chemin: Path) -> ResultatExtraction:
     import pdfplumber
 
     valeurs = _valeurs_formulaire(chemin)
+
+    # Sans formulaire, on garde la lecture éprouvée de pdfplumber. La reconstruction
+    # de lignes ci-dessous n'existe que pour replacer les valeurs saisies ; l'imposer
+    # à tous les PDF ferait courir un risque inutile au cas le plus courant.
+    if not valeurs:
+        with pdfplumber.open(str(chemin)) as pdf:
+            pages = [page.extract_text() or "" for page in pdf.pages]
+        texte = "\n\n".join(pages).strip()
+        return ResultatExtraction(texte, "pdf_natif", len(pages), len(texte))
+
     restantes = dict(valeurs)
     pages: list[str] = []
 
     with pdfplumber.open(str(chemin)) as pdf:
         for page in pdf.pages:
-            lignes: list[dict] = []
-
-            for mot in sorted(page.extract_words(), key=lambda m: (m["top"], m["x0"])):
-                centre = (mot["top"] + mot["bottom"]) / 2
-                ligne = next((l for l in lignes if l["haut"] - 2 <= centre <= l["bas"] + 2), None)
-                if ligne is None:
-                    lignes.append(
-                        {
-                            "haut": mot["top"],
-                            "bas": mot["bottom"],
-                            "elements": [(mot["x0"], mot["text"])],
-                        }
-                    )
-                else:
-                    ligne["elements"].append((mot["x0"], mot["text"]))
-                    ligne["haut"] = min(ligne["haut"], mot["top"])
-                    ligne["bas"] = max(ligne["bas"], mot["bottom"])
+            lignes = regrouper_en_lignes(page.extract_words())
 
             for annot in page.annots or []:
                 nom = _denormaliser_nom_champ(annot.get("title") or "")
@@ -157,21 +196,20 @@ def _lire_pdf_natif(chemin: Path) -> ResultatExtraction:
                     continue
                 restantes.pop(nom, None)
                 centre = (annot["top"] + annot["bottom"]) / 2
-                ligne = min(
-                    lignes, key=lambda l: abs((l["haut"] + l["bas"]) / 2 - centre), default=None
-                )
-                if ligne is not None and abs((ligne["haut"] + ligne["bas"]) / 2 - centre) < TOLERANCE_LIGNE:
+                ligne = min(lignes, key=lambda l: abs(l["centre"] - centre), default=None)
+                if ligne is not None and abs(ligne["centre"] - centre) < TOLERANCE_LIGNE:
                     ligne["elements"].append((annot["x0"], valeur))
                 else:
                     lignes.append(
                         {
+                            "centre": centre,
                             "haut": annot["top"],
                             "bas": annot["bottom"],
                             "elements": [(annot["x0"], valeur)],
                         }
                     )
 
-            lignes.sort(key=lambda l: l["haut"])
+            lignes.sort(key=lambda l: l["centre"])
             pages.append(
                 "\n".join(
                     " ".join(t for _, t in sorted(l["elements"], key=lambda e: e[0]))
