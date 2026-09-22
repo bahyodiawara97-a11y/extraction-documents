@@ -10,7 +10,7 @@ justesse champ par champ et des contrôles de cohérence métier.
 sur le jeu d'évaluation. Une démonstration publique déployée avec une clé laisserait
 n'importe quel visiteur dépenser le crédit de son auteur ; déployée sans, elle
 accueillerait le visiteur par une demande de clé qu'il n'a pas. Les résultats sont
-donc figés par `evaluation/generer_demo.py`, qui exécute le vrai pipeline — rien
+donc figés par `evaluation/generer_demo.py`, qui exécute le vrai pipeline - rien
 n'est écrit à la main. Qui veut traiter ses propres documents apporte sa clé.
 
 ## Résultats mesurés
