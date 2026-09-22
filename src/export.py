@@ -17,10 +17,12 @@ def vers_dataframe(lot: ResultatLot) -> pd.DataFrame:
         return df
 
     colonnes_controle = [
-        "score_confiance",
+        "taux_completude",
         "necessite_revision",
-        "alertes",
-        "champs_manquants",
+        "motif_revision",
+        "controles_echoues",
+        "champs_critiques_manquants",
+        "remarques",
         "methode_extraction",
         "nb_pages",
         "duree_s",

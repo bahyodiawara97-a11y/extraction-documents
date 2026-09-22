@@ -54,9 +54,11 @@ def main() -> int:
         if not doc.succes:
             statut = f"ÉCHEC  — {doc.erreur}"
         elif doc.rapport and doc.rapport.necessite_revision:
-            statut = f"À RELIRE (confiance {doc.rapport.score_confiance})"
+            statut = f"À RELIRE — {doc.rapport.motif_revision}"
         else:
-            statut = f"OK (confiance {doc.rapport.score_confiance if doc.rapport else '?'})"
+            completude = doc.rapport.taux_completude if doc.rapport else "?"
+            remarque = " (voir remarques)" if doc.rapport and doc.rapport.remarques else ""
+            statut = f"OK — complétude {completude}{remarque}"
         print(f"  {doc.nom_fichier:<40} {statut}")
 
     extensions = {"excel": ".xlsx", "csv": ".csv", "sqlite": ".db"}

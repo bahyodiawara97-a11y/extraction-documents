@@ -46,10 +46,14 @@ class DocumentTraite:
                 else:
                     ligne[cle] = valeur
         if self.rapport is not None:
-            ligne["score_confiance"] = self.rapport.score_confiance
+            ligne["taux_completude"] = self.rapport.taux_completude
             ligne["necessite_revision"] = self.rapport.necessite_revision
-            ligne["alertes"] = " | ".join(self.rapport.alertes)
-            ligne["champs_manquants"] = ", ".join(self.rapport.champs_manquants)
+            ligne["motif_revision"] = self.rapport.motif_revision
+            ligne["controles_echoues"] = " | ".join(self.rapport.controles_echoues)
+            ligne["champs_critiques_manquants"] = ", ".join(
+                self.rapport.champs_critiques_manquants
+            )
+            ligne["remarques"] = " | ".join(self.rapport.remarques)
         ligne["methode_extraction"] = self.methode_extraction
         ligne["nb_pages"] = self.nb_pages
         ligne["duree_s"] = round(self.duree_secondes, 2)

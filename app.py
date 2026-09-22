@@ -46,13 +46,10 @@ with st.sidebar:
             os.environ["ANTHROPIC_API_KEY"] = cle_saisie
             cle_presente = True
 
-    seuil_revision = st.slider(
-        "Seuil de confiance",
-        min_value=0.0,
-        max_value=1.0,
-        value=0.7,
-        step=0.05,
-        help="En dessous de ce score, le document est marqué comme à relire.",
+    st.caption(
+        "Un document est signalé à relire quand un contrôle métier échoue ou qu'un "
+        "champ indispensable manque — jamais sur un simple seuil de complétude, "
+        "qu'un document peut faire baisser sans la moindre erreur d'extraction."
     )
 
     with st.expander("Champs extraits pour ce type"):
@@ -104,20 +101,30 @@ if lot and lot.documents:
         use_container_width=True,
     )
 
-    # Détail par document : utile pour comprendre pourquoi un document est signalé.
-    with st.expander("Détail des alertes"):
+    # Détail par document, en distinguant ce qui est une erreur de ce qui est
+    # seulement inhabituel — la confusion entre les deux était le défaut à corriger.
+    with st.expander("Détail par document"):
         for doc in lot.documents:
             if not doc.succes:
                 st.error(f"**{doc.nom_fichier}** — {doc.erreur}")
-            elif doc.rapport and doc.rapport.alertes:
+                continue
+            if doc.rapport is None:
+                continue
+
+            if doc.rapport.controles_echoues:
                 st.warning(
-                    f"**{doc.nom_fichier}** (confiance {doc.rapport.score_confiance})\n\n"
-                    + "\n".join(f"- {a}" for a in doc.rapport.alertes)
+                    f"**{doc.nom_fichier}** — contrôles en échec\n\n"
+                    + "\n".join(f"- {c}" for c in doc.rapport.controles_echoues)
                 )
-            elif doc.rapport and doc.rapport.champs_manquants:
+            if doc.rapport.champs_critiques_manquants:
+                st.warning(
+                    f"**{doc.nom_fichier}** — champs indispensables absents : "
+                    + ", ".join(doc.rapport.champs_critiques_manquants)
+                )
+            if doc.rapport.remarques:
                 st.info(
-                    f"**{doc.nom_fichier}** — champs non trouvés : "
-                    + ", ".join(doc.rapport.champs_manquants)
+                    f"**{doc.nom_fichier}** — remarques (pas des erreurs)\n\n"
+                    + "\n".join(f"- {r}" for r in doc.rapport.remarques)
                 )
 
     st.subheader("Export")
