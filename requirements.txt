@@ -3,7 +3,7 @@ pdfplumber==0.11.4          # PDF natifs (texte déjà présent) + position des 
 pypdf==5.1.0                # valeurs des formulaires AcroForm (pdfplumber tronque l'UTF-16)
 pypdfium2==4.30.0           # rendu PDF -> image (pas de dépendance système, contrairement à poppler)
 pytesseract==0.3.13         # OCR local (nécessite le binaire tesseract, voir README)
-Pillow==11.0.0
+Pillow>=11.0.0
 
 # --- Structuration LLM ---
 # Version 0.x volontairement : la branche 1.x utilise httpx2, dont la pile réseau
@@ -13,7 +13,7 @@ anthropic==0.40.0
 pydantic==2.9.2
 
 # --- Export / données ---
-pandas==2.2.3
+pandas>=2.2.3
 openpyxl==3.1.5             # export .xlsx
 
 # --- Interface ---
