@@ -30,8 +30,8 @@ Sur un jeu de 10 documents annotés à la main (90 comparaisons champ par champ)
 | devise | 10 | 100 % | 100 % | 0 |
 
 Le chiffre qui compte n'est pas le 100 %, c'est la dernière colonne. **Neuf champs
-du jeu devaient légitimement rester vides** — une facture exonérée de TVA sans
-montant HT, un paiement comptant sans échéance, un reçu sans numéro ni client — et
+du jeu devaient légitimement rester vides** - une facture exonérée de TVA sans
+montant HT, un paiement comptant sans échéance, un reçu sans numéro ni client - et
 les neuf sont restés vides. Le pipeline n'a pas divisé le total par 1,2 pour
 fabriquer un HT, ni ajouté trente jours à la date d'émission pour inventer une
 échéance.
@@ -146,8 +146,8 @@ pytest tests/ -q                                      # 133 tests, sans clé API
 ```
 
 Ajouter un type de document tient en deux gestes : définir une classe Pydantic dans
-`src/schemas.py` avec une `description` par champ — ces descriptions sont envoyées
-au modèle et pilotent directement la qualité de l'extraction — puis l'enregistrer
+`src/schemas.py` avec une `description` par champ - ces descriptions sont envoyées
+au modèle et pilotent directement la qualité de l'extraction - puis l'enregistrer
 dans le dictionnaire `SCHEMAS`. L'interface et le CLI le découvrent seuls.
 
 ## Ce que le projet a révélé
@@ -160,14 +160,14 @@ au format AcroForm stocke les valeurs saisies dans une structure distincte du te
 de page. `pdfplumber.extract_text()` ne lit que la page : sur un bail de 128 champs
 dont 40 remplis, il renvoyait 20 000 caractères d'intitulés et zéro valeur, sans le
 moindre avertissement. La correction croise deux bibliothèques parce qu'aucune ne
-suffit seule — pypdf décode correctement les valeurs mais ignore leur position,
+suffit seule - pypdf décode correctement les valeurs mais ignore leur position,
 pdfplumber donne la position mais tronque l'UTF-16 - et les apparie par nom de
 champ normalisé. Résultat : 0 valeur détectée avant, 40 après.
 
 **Le modèle écrivait la chaîne « null » au lieu de laisser le champ vide.** Une
 valeur syntaxiquement valide et sémantiquement vide. Le taux de remplissage la
-comptait comme renseignée, et pandas — qui interprète `"null"` comme une valeur
-manquante à la lecture — l'affichait comme une case vide. Le calcul disait
+comptait comme renseignée, et pandas - qui interprète `"null"` comme une valeur
+manquante à la lecture - l'affichait comme une case vide. Le calcul disait
 « rempli », l'affichage disait « vide », et les deux lisaient la même donnée. La
 correction agit à trois niveaux : reformulation du prompt, nettoyage systématique de
 dix-huit variantes connues après extraction, et revérification côté validation. Une
@@ -175,7 +175,7 @@ consigne dans un prompt est une requête, pas une garantie.
 
 **Un indicateur nommé « score de confiance » mesurait un taux de complétude.** Les
 deux coïncidaient tant que les documents avaient la forme attendue. Une quittance de
-soins — sans TVA, parce que les actes médicaux n'y sont pas soumis — a révélé la
+soins - sans TVA, parce que les actes médicaux n'y sont pas soumis - a révélé la
 divergence : extraction parfaite, score de 0,67, document signalé à tort. Le calcul
 était honnête, son nom promettait autre chose. Trois notions ont été séparées, chacune
 nommée d'après ce qu'elle mesure : `taux_completude` (un fait), `controles_echoues`
@@ -188,7 +188,7 @@ La reconstruction de lignes ajoutée pour les formulaires étendait l'étendue v
 d'une ligne à chaque mot ajouté. Une lettre de filigrane haute de 54 points suffisait
 alors à élargir la ligne jusqu'à absorber toute la page par cascade : le document
 entier se retrouvait sur une seule ligne, montants mélangés. Aucune exception, aucun
-texte perdu, seulement un ordre de lecture détruit — et des extractions toujours
+texte perdu, seulement un ordre de lecture détruit - et des extractions toujours
 plausibles. C'est le harnais d'évaluation, écrit une heure plus tôt, qui l'a détecté.
 Les PDF sans formulaire reviennent désormais à `pdfplumber`, le centre de référence
 d'une ligne n'est plus jamais étendu, et six tests de régression couvrent le cas.
@@ -197,10 +197,10 @@ d'une ligne n'est plus jamais étendu, et six tests de régression couvrent le c
 
 **Sortie structurée forcée.** Le schéma Pydantic est déclaré comme un outil et son
 appel imposé via `tool_choice`. Le modèle ne peut pas renvoyer autre chose qu'un
-objet conforme au JSON Schema — pas de JSON malformé à rattraper au parsing.
+objet conforme au JSON Schema - pas de JSON malformé à rattraper au parsing.
 
 **Découpage plutôt que troncature.** Les documents de plus de 20 000 caractères
-étaient tronqués, perdant silencieusement leur fin — c'est-à-dire les signatures,
+étaient tronqués, perdant silencieusement leur fin - c'est-à-dire les signatures,
 les totaux et les clauses finales. Ils sont découpés aux sauts de ligne avec 1 500
 caractères de recouvrement, extraits bloc par bloc, puis fusionnés : première valeur
 non vide pour les champs simples, concaténation dédupliquée pour les listes. Un
@@ -226,15 +226,15 @@ conception.
 
 ## Limites connues
 
-Le jeu d'évaluation est petit et entièrement synthétique — c'est la limite
+Le jeu d'évaluation est petit et entièrement synthétique - c'est la limite
 principale. Les mises en page réelles, avec leurs colonnes serrées, leurs acomptes
 et leurs remises en pied de tableau, restent à éprouver.
 
 L'OCR se trompe sur des chiffres : observé sur une quittance réelle, un « 53 € » lu
 « S3€ ». Le pipeline n'a pas de mécanisme de détection pour ce type d'erreur.
 
-Le schéma `Facture` encode des hypothèses métier — l'existence d'une TVA, d'un
-numéro — qui ne valent pas pour tous les documents. Les champs HT et TVA ont été
+Le schéma `Facture` encode des hypothèses métier - l'existence d'une TVA, d'un
+numéro - qui ne valent pas pour tous les documents. Les champs HT et TVA ont été
 retirés des champs critiques, mais un schéma dédié aux quittances serait plus juste.
 
 Le texte des documents est envoyé à une API externe. Sur des documents
