@@ -1,0 +1,26 @@
+# --- Extraction de texte ---
+pdfplumber==0.11.4          # PDF natifs (texte déjà présent) + position des champs
+pypdf==5.1.0                # valeurs des formulaires AcroForm (pdfplumber tronque l'UTF-16)
+pypdfium2==4.30.0           # rendu PDF -> image (pas de dépendance système, contrairement à poppler)
+pytesseract==0.3.13         # OCR local (nécessite le binaire tesseract, voir README)
+Pillow==11.0.0
+
+# --- Structuration LLM ---
+# Version 0.x volontairement : la branche 1.x utilise httpx2, dont la pile réseau
+# provoque des TimeoutError sur certaines machines. 0.40.0 couvre tout ce dont
+# le pipeline a besoin (messages.create + tool_choice forcé).
+anthropic==0.40.0
+pydantic==2.9.2
+
+# --- Export / données ---
+pandas==2.2.3
+openpyxl==3.1.5             # export .xlsx
+
+# --- Interface ---
+streamlit==1.40.1
+
+# --- Config ---
+python-dotenv==1.0.1
+
+# --- Tests ---
+pytest==8.3.3

@@ -1,0 +1,15 @@
+.env
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Données : on versionne l'arborescence, pas les documents
+data/input/*
+!data/input/.gitkeep
+data/output/*
+!data/output/.gitkeep
+
+.DS_Store
