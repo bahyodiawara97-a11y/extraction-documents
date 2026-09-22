@@ -1,13 +1,12 @@
 # Extraction d'informations depuis des documents non structurés
 
 Pipeline qui transforme des factures, reçus, CV et contrats-PDF natifs, PDF
-formulaires ou scans — en données structurées exportables, avec une mesure de
+formulaires ou scans - en données structurées exportables, avec une mesure de
 justesse champ par champ et des contrôles de cohérence métier.
 
 Écrit en Python, testé par 133 tests, évalué sur un jeu de documents annotés.
 
-**[Démonstration en ligne](https://extraction-documents-bahyo.streamlit.app)** —
-sans clé API : l'application rejoue les résultats d'une exécution réelle du pipeline
+**[Démonstration en ligne](https://extraction-documents-bahyo.streamlit.app)** - sans clé API : l'application rejoue les résultats d'une exécution réelle du pipeline
 sur le jeu d'évaluation. Une démonstration publique déployée avec une clé laisserait
 n'importe quel visiteur dépenser le crédit de son auteur ; déployée sans, elle
 accueillerait le visiteur par une demande de clé qu'il n'a pas. Les résultats sont
