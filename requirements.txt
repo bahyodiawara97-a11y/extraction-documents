@@ -1,26 +1,36 @@
+# Versions minimales plutôt qu'exactes, à une exception près.
+#
+# Un `==` fige la version compilée disponible le jour où on l'écrit. Sur une
+# machine de déploiement dont le Python est plus récent, cette version précise
+# n'a jamais été compilée : pip télécharge alors le code source et tente de le
+# compiler sur place — ce que pandas, Pillow et pydantic (Rust) ne supportent
+# pas dans un conteneur de build limité. D'où `>=`, qui laisse pip choisir une
+# version compilée pour le Python en face.
+
 # --- Extraction de texte ---
-pdfplumber==0.11.4          # PDF natifs (texte déjà présent) + position des champs
-pypdf==5.1.0                # valeurs des formulaires AcroForm (pdfplumber tronque l'UTF-16)
-pypdfium2==4.30.0           # rendu PDF -> image (pas de dépendance système, contrairement à poppler)
-pytesseract==0.3.13         # OCR local (nécessite le binaire tesseract, voir README)
+pdfplumber>=0.11.4          # PDF natifs (texte déjà présent) + position des champs
+pypdf>=5.1.0                # valeurs des formulaires AcroForm (pdfplumber tronque l'UTF-16)
+pypdfium2>=4.30.0           # rendu PDF -> image (pas de dépendance système, contrairement à poppler)
+pytesseract>=0.3.13         # OCR local (nécessite le binaire tesseract, voir README)
 Pillow>=11.0.0
 
 # --- Structuration LLM ---
-# Version 0.x volontairement : la branche 1.x utilise httpx2, dont la pile réseau
-# provoque des TimeoutError sur certaines machines. 0.40.0 couvre tout ce dont
-# le pipeline a besoin (messages.create + tool_choice forcé).
+# La seule version épinglée, et pour une raison précise : la branche 1.x utilise
+# httpx2, dont la pile réseau provoque des TimeoutError sur certaines machines.
+# 0.40.0 couvre tout ce dont le pipeline a besoin (messages.create + tool_choice
+# forcé). Ici le `==` documente une décision, il n'est pas de la prudence.
 anthropic==0.40.0
-pydantic==2.9.2
+pydantic>=2.9.2
 
 # --- Export / données ---
 pandas>=2.2.3
-openpyxl==3.1.5             # export .xlsx
+openpyxl>=3.1.5             # export .xlsx
 
 # --- Interface ---
-streamlit==1.40.1
+streamlit>=1.40.1
 
 # --- Config ---
-python-dotenv==1.0.1
+python-dotenv>=1.0.1
 
 # --- Tests ---
-pytest==8.3.3
+pytest>=8.3.3
