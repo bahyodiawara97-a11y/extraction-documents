@@ -1,6 +1,6 @@
 # Extraction d'informations depuis des documents non structurés
 
-Pipeline qui transforme des factures, reçus, CV et contrats — PDF natifs, PDF
+Pipeline qui transforme des factures, reçus, CV et contrats-PDF natifs, PDF
 formulaires ou scans — en données structurées exportables, avec une mesure de
 justesse champ par champ et des contrôles de cohérence métier.
 
@@ -60,7 +60,7 @@ attendue, extraite à l'identique), **incorrect** (une autre valeur est sortie),
 
 Cette dernière distinction est celle que la plupart des évaluations écrasent, à
 tort. Une omission se rattrape : le champ est vide, un humain le voit et le
-complète. Une hallucination est invisible — elle produit une valeur plausible que
+complète. Une hallucination est invisible - elle produit une valeur plausible que
 personne ne remettra en question. Un pipeline qui omet vaut mieux qu'un pipeline
 qui invente, et aucune mesure d'exactitude globale ne fait apparaître cette
 asymétrie.
@@ -112,7 +112,7 @@ src/evaluation.py — mesure la justesse contre un jeu annoté (hors pipeline)
 | `evaluer.py` | Campagne d'évaluation |
 
 C'est un **pipeline**, pas un agent : l'ordre des étapes est fixé par le code, le
-LLM n'intervient qu'à la structuration. Choix délibéré — pour ce cas d'usage, un
+LLM n'intervient qu'à la structuration. Choix délibéré - pour ce cas d'usage, un
 enchaînement déterministe est plus fiable, moins cher et surtout testable.
 
 ## Installation
@@ -162,7 +162,7 @@ de page. `pdfplumber.extract_text()` ne lit que la page : sur un bail de 128 cha
 dont 40 remplis, il renvoyait 20 000 caractères d'intitulés et zéro valeur, sans le
 moindre avertissement. La correction croise deux bibliothèques parce qu'aucune ne
 suffit seule — pypdf décode correctement les valeurs mais ignore leur position,
-pdfplumber donne la position mais tronque l'UTF-16 — et les apparie par nom de
+pdfplumber donne la position mais tronque l'UTF-16 - et les apparie par nom de
 champ normalisé. Résultat : 0 valeur détectée avant, 40 après.
 
 **Le modèle écrivait la chaîne « null » au lieu de laisser le champ vide.** Une
